@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields: slug, manifest, definition, script' }, { status: 400 });
     }
 
-    // Validate slug format
-    if (!/^[a-z0-9-]+$/.test(slug)) {
-      return NextResponse.json({ error: 'Slug must be lowercase alphanumeric with hyphens' }, { status: 400 });
+    // Validate slug format (Allow Unicode letters and numbers)
+    if (!/^[\p{L}\p{N}-]+$/u.test(slug)) {
+      return NextResponse.json({ error: 'Slug must be alphanumeric (Unicode supported) with hyphens' }, { status: 400 });
     }
 
     const userId = session.user.id;
