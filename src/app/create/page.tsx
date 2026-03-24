@@ -3,7 +3,7 @@
  * 
  * Route: /create
  * 
- * Lists games created by the current logged-in user.
+ * Lists works created by the current logged-in user.
  * Redirects to sign-in if not authenticated.
  */
 
@@ -30,9 +30,9 @@ export default async function CreationPage() {
   const userId = session.user.id;
   const username = (session.user as any).username || "unknown";
 
-  // Fetch games from database
-  // @ts-ignore - prisma.userGame is generated but sometimes not picked up by TS server immediately
-  const games = await prisma.userWork.findMany({
+  // Fetch works from database
+  // @ts-ignore
+  const works = await prisma.userWork.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
   });
@@ -42,11 +42,11 @@ export default async function CreationPage() {
       <div className="flex flex-col gap-1 mb-8">
         <h1 className="text-3xl font-black tracking-tight text-white">Creator Studio</h1>
         <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">
-          Manage, publish, and track your custom logic games.
+          Manage, publish, and track your custom applications.
         </p>
       </div>
 
-      <CreationClient initialGames={games.map((g: any) => ({
+      <CreationClient initialWorks={works.map((g: any) => ({
         id: g.id,
         slug: g.slug,
         title: g.title,

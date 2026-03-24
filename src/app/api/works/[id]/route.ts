@@ -1,9 +1,9 @@
 /**
- * Game Detail API — Update, Delete, Publish a specific game.
+ * Work Detail API — Update, Delete, Publish a specific work.
  * 
- * PUT    /api/games/[id] — Update game
- * DELETE /api/games/[id] — Delete game
- * PATCH  /api/games/[id] — Toggle publish status
+ * PUT    /api/works/[id] — Update work
+ * DELETE /api/works/[id] — Delete work
+ * PATCH  /api/works/[id] — Toggle publish status
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -16,7 +16,7 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// Update a game
+// Update a work
 export async function PUT(req: NextRequest, { params }: RouteParams) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -66,7 +66,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-// Delete a game
+// Delete a work
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   const session = await auth();
   if (!session?.user?.id) {

@@ -3,7 +3,7 @@
 /**
  * Creation Center Client component
  * 
- * Handles interaction logic for publishing and deleting user games.
+ * Handles interaction logic for publishing and deleting user works.
  */
 
 import React, { useState } from 'react';
@@ -39,22 +39,22 @@ interface UserGame {
 }
 
 interface CreationClientProps {
-  initialGames: UserGame[];
+  initialWorks: UserGame[];
   userId: string;
   username: string;
 }
 
-export default function CreationClient({ initialGames, userId, username }: CreationClientProps) {
-  const [games, setGames] = useState<UserGame[]>(initialGames);
+export default function CreationClient({ initialWorks, userId, username }: CreationClientProps) {
+  const [works, setWorks] = useState<UserGame[]>(initialWorks);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const togglePublish = async (gameId: string) => {
     setLoadingId(gameId);
     try {
-      const res = await fetch(`/api/games/${gameId}`, { method: 'PATCH' });
+      const res = await fetch(`/api/works/${gameId}`, { method: 'PATCH' });
       if (res.ok) {
         const { isPublished } = await res.json();
-        setGames(prev => prev.map(g => g.id === gameId ? { ...g, isPublished } : g));
+        setWorks(prev => prev.map(g => g.id === gameId ? { ...g, isPublished } : g));
       }
     } catch (err) {
       console.error('Failed to toggle publish:', err);
@@ -63,17 +63,17 @@ export default function CreationClient({ initialGames, userId, username }: Creat
     }
   };
 
-  const deleteGame = async (gameId: string) => {
+  const deleteWork = async (gameId: string) => {
     if (!confirm('Are you sure you want to delete this work? This action cannot be undone.')) return;
     
     setLoadingId(gameId);
     try {
-      const res = await fetch(`/api/games/${gameId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/works/${gameId}`, { method: 'DELETE' });
       if (res.ok) {
-        setGames(prev => prev.filter(g => g.id !== gameId));
+        setWorks(prev => prev.filter(g => g.id !== gameId));
       }
     } catch (err) {
-      console.error('Failed to delete game:', err);
+      console.error('Failed to delete work:', err);
     } finally {
       setLoadingId(null);
     }
@@ -199,8 +199,8 @@ export default function CreationClient({ initialGames, userId, username }: Creat
         </div>
       </motion.div>
 
-      {/* Games List */}
-      {games.length === 0 ? (
+      {/* Works List */}
+      {works.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem] gap-4">
           <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-full">
             <Activity size={40} className="text-slate-400" />
@@ -213,9 +213,9 @@ export default function CreationClient({ initialGames, userId, username }: Creat
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence mode="popLayout">
-            {games.map((game) => (
+            {works.map((work) => (
               <motion.div
-                key={game.id}
+                key={work.id}
                 layout
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -224,43 +224,43 @@ export default function CreationClient({ initialGames, userId, username }: Creat
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg font-black", game.color || "bg-indigo-500")}>
-                    {game.icon ? <span className="text-xl">{game.icon}</span> : <Activity size={24} />}
+                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg font-black", work.color || "bg-indigo-500")}>
+                    {work.icon ? <span className="text-xl">{work.icon}</span> : <Activity size={24} />}
                   </div>
                   <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-full">
-                    <Globe size={10} className={game.isPublished ? "text-emerald-500" : "text-slate-400"} />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">{game.isPublished ? 'Live' : 'Draft'}</span>
-                    {loadingId === game.id && <Loader2 size={10} className="animate-spin ml-1" />}
+                    <Globe size={10} className={work.isPublished ? "text-emerald-500" : "text-slate-400"} />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{work.isPublished ? 'Live' : 'Draft'}</span>
+                    {loadingId === work.id && <Loader2 size={10} className="animate-spin ml-1" />}
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="space-y-2 mb-6">
-                  <h3 className="text-xl font-black">{game.title}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 h-10">{game.description || 'No description provided.'}</p>
+                  <h3 className="text-xl font-black">{work.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2 h-10">{work.description || 'No description provided.'}</p>
                 </div>
 
                 {/* Stats */}
                 <div className="flex items-center gap-4 mb-6 pt-4 border-t border-slate-50 dark:border-slate-800">
                   <div className="flex flex-col">
                     <span className="text-[10px] text-muted-foreground font-bold uppercase">Views</span>
-                    <span className="text-sm font-black">{game.viewCount}</span>
+                    <span className="text-sm font-black">{work.viewCount}</span>
                   </div>
                   <div className="flex flex-col border-l border-slate-100 dark:border-slate-800 pl-4">
                     <span className="text-[10px] text-muted-foreground font-bold uppercase">Difficulty</span>
-                    <span className="text-sm font-black">{game.difficulty || 'Easy'}</span>
+                    <span className="text-sm font-black">{work.difficulty || 'Easy'}</span>
                   </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
-                  <Link href={`/user-works/${userId}/${game.slug}`} className="flex-1 flex items-center justify-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-3 rounded-xl font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all text-center uppercase tracking-widest">
+                  <Link href={`/user-works/${userId}/${work.slug}`} className="flex-1 flex items-center justify-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-3 rounded-xl font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all text-center uppercase tracking-widest">
                      Run
                   </Link>
-                  <button onClick={() => togglePublish(game.id)} disabled={loadingId === game.id} className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95 text-center">
-                    {game.isPublished ? <EyeOff size={18} /> : <Globe size={18} />}
+                  <button onClick={() => togglePublish(work.id)} disabled={loadingId === work.id} className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95 text-center">
+                    {work.isPublished ? <EyeOff size={18} /> : <Globe size={18} />}
                   </button>
-                  <button onClick={() => deleteGame(game.id)} disabled={loadingId === game.id} className="flex items-center justify-center w-11 h-11 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 text-center">
+                  <button onClick={() => deleteWork(work.id)} disabled={loadingId === work.id} className="flex items-center justify-center w-11 h-11 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 text-center">
                     <Trash2 size={18} />
                   </button>
                 </div>

@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { GameCard } from '@/components/home/GameCard';
 import { ChevronLeft, Grid, Filter } from 'lucide-react';
 
-const ALL_GAMES = [
+const ALL_WORKS = [
   {
     title: "Wordle",
     description: "Daily word puzzle challenge.",
-    href: "/games/wordle",
+    href: "/works/wordle",
     icon: <Grid />,
     color: "brand-gradient",
     difficulty: "Medium" as const
@@ -17,7 +17,7 @@ const ALL_GAMES = [
   {
     title: "Logic Grid",
     description: "Master the Sudoku challenge.",
-    href: "/games/sudoku",
+    href: "/works/sudoku",
     icon: <Grid />,
     color: "bg-emerald-500",
     difficulty: "Hard" as const
@@ -25,7 +25,7 @@ const ALL_GAMES = [
   {
     title: "Nodes",
     description: "Identify hidden connections.",
-    href: "/games/connections",
+    href: "/works/connections",
     icon: <Grid />,
     color: "bg-indigo-600",
     difficulty: "Easy" as const
@@ -33,7 +33,7 @@ const ALL_GAMES = [
   {
     title: "Seqnc",
     description: "Numerical sequence challenge.",
-    href: "/games/numbrix",
+    href: "/works/numbrix",
     icon: <Grid />,
     color: "bg-amber-500",
     difficulty: "Medium" as const
@@ -58,8 +58,8 @@ export default function ArchivePage() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {ALL_GAMES.map((game) => (
-          <GameCard key={game.title} {...game} />
+        {ALL_WORKS.map((work) => (
+          <GameCard key={work.title} {...work} />
         ))}
       </div>
     </div>

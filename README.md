@@ -1,6 +1,6 @@
-# LoricaMaris — AI Game & App Engine
+# LoricaMaris — AI App Engine
 
-LoricaMaris is a lightweight platform designed for generating, deploying, and playing AI-created games and applications. It provides a secure sandbox for logic execution and a flexible UI schema for dynamic rendering.
+LoricaMaris is a lightweight platform designed for generating, deploying, and playing AI-created applications. It provides a secure sandbox for logic execution and a flexible UI schema for dynamic rendering.
 
 > [!TIP]
 > **🚀 Try the A2UI Demo**: [Peak Pulse Dashboard](__DOMAIN__/user-works/guest/peak-pulse) — A real-time analytics UI built by an AI agent.

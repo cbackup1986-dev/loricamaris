@@ -1,8 +1,8 @@
 /**
- * Game API — CRUD endpoints for user-created games.
+ * Works API — CRUD endpoints for user-created applications/works.
  * 
- * POST /api/games — Create a new game
- * GET  /api/games — List games (by userId or all published)
+ * POST /api/works — Create a new work
+ * GET  /api/works — List works (by userId or all published)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -11,7 +11,7 @@ import prisma from '@/lib/prisma';
 import { saveManifest, saveDefinition, saveLogic } from '@/lib/sdk/GameFileManager';
 import type { GameManifest, GameDefinition } from '@/sdk/types';
 
-// Create a new game
+// Create a new work
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      game: {
+      work: {
         id: game.id,
         slug: game.slug,
         url: `/user-works/${(session.user as any).username}/${slug}`,
@@ -79,13 +79,13 @@ export async function POST(req: NextRequest) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
     // Handle unique constraint violation
     if (msg.includes('Unique constraint')) {
-      return NextResponse.json({ error: 'A game with this slug already exists' }, { status: 409 });
+      return NextResponse.json({ error: 'A work with this slug already exists' }, { status: 409 });
     }
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
-// List games
+// List works
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
       take: 50,
     });
 
-    return NextResponse.json({ games });
+    return NextResponse.json({ works: games });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
     return NextResponse.json({ error: msg }, { status: 500 });

@@ -1,11 +1,11 @@
 ---
-name: "LoricaMaris Game Creation"
-description: "Technical Specification and API documentation for building and publishing LoricaMaris apps."
+name: "LoricaMaris Creation Engine"
+description: "Technical Specification and API documentation for building and publishing LoricaMaris applications."
 ---
 
-# LoricaMaris Game Creation: Technical Specification
+# LoricaMaris Creation Engine: Technical Specification
 
-This skill enables agents to design, build, and publish interactive apps to the LoricaMaris platform.
+This skill enables agents to design, build, and publish interactive applications to the LoricaMaris platform.
 
 ## 🚀 Technology Stack
 Agents should use these technologies for maximum compatibility and best aesthetics:
@@ -37,7 +37,7 @@ Refer to the dynamic API for full property lists: `GET __DOMAIN__/api/sdk/skill`
 
 ---
 
-## 📦 Publishing Your App (API Interface)
+## 📦 Publishing Your Work (API Interface)
 
 Agents should choose the most appropriate method based on their available tools (e.g., `fetch`, `curl`).
 
@@ -53,15 +53,15 @@ To publish apps to your account, you **MUST** include your developer token in th
 > Usage without a token will result in **Guest Mode**, where games are temporary and not linked to a persistent account.
 
 ### Method 1: JSON Publication (Synchronous)
-**Endpoint**: `POST __DOMAIN__/api/games/publish`
+**Endpoint**: `POST __DOMAIN__/api/works/publish`
 
 **Payload**: `application/json`
 ```json
 {
-  "manifest": { "title": "My Awesome Game", "icon": "Gamepad", "color": "bg-indigo-600" },
+  "manifest": { "title": "My Awesome App", "icon": "Gamepad", "color": "bg-indigo-600" },
   "definition": { "root": "...", "components": [...] },
   "script": "api.registerHandler(...)",
-  "slug": "my-awesome-game" 
+  "slug": "my-awesome-app" 
 }
 ```
 
@@ -69,7 +69,7 @@ To publish apps to your account, you **MUST** include your developer token in th
 > **Always provide a `slug`**: The `slug` determines your app's permanent URL (e.g., `__DOMAIN__/user-works/user-id/my-awesome-game`). If omitted, the platform will attempt to generate one from the title.
 
 ### Method 2: ZIP Upload (Binary)
-**Endpoint**: `POST __DOMAIN__/api/games/upload`
+**Endpoint**: `POST __DOMAIN__/api/works/upload`
 
 **Payload**: `multipart/form-data`
 - **field `file`**: A ZIP archive containing `manifest.json`, `definition.json`, and `logic.js` at the root.

@@ -13,7 +13,7 @@ A2UI (Agent-to-UI) is the process where an AI agent translates a high-level user
 2.  **Audit**: Agent fetches the SDK specification via the Dynamic API.
 3.  **Generation**: OpenClaw generates `manifest.json`, `definition.json`, and `logic.js`.
 4.  **Synthesis**: The agent packages these files into a ZIP archive.
-5.  **Deployment**: The agent uses the `upload` API to push the ZIP to **`__DOMAIN__/api/games/upload`**.
+5.  **Deployment**: The agent uses the `upload` API to push the ZIP to **`__DOMAIN__/api/works/upload`**.
 6.  **Result**: The platform returns a live URL (e.g., `__DOMAIN__/user-works/guest/peak-pulse`).
 
 ## 📝 Example OpenClaw Interaction
@@ -28,7 +28,7 @@ The agent generates the files following the [SDK Specification](../skills/game-c
 OpenClaw executes a tool call to publish the app to the live platform:
 ```javascript
 // OpenClaw publishes via the zip upload endpoint
-const res = await fetch('__DOMAIN__/api/games/upload', {
+const res = await fetch('__DOMAIN__/api/works/upload', {
   method: 'POST',
   body: formData // containing app.zip
 });

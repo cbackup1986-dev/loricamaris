@@ -29,41 +29,41 @@ const FEATURED_WORKS = [
     title: "Nodes",
     description: "Connect related topics in this word association challenge.",
     icon: <Shapes className="w-6 h-6" />,
-    href: "/games/connections",
+    href: "/works/connections",
     color: "bg-yellow-500",
     difficulty: "Medium" as const,
     isDaily: true,
-    type: "GAME" as const
+    type: "APP" as const
   },
   {
     title: "Wordle",
     description: "Guess the hidden word in 6 tries with dynamic hints.",
     icon: <Layout className="w-6 h-6" />,
-    href: "/games/wordle",
+    href: "/works/wordle",
     color: "bg-indigo-500",
     difficulty: "Medium" as const,
     isDaily: true,
-    type: "GAME" as const
+    type: "APP" as const
   },
   {
     title: "Seqnc",
     description: "Find the hidden continuous path through all numbers.",
     icon: <Hash className="w-6 h-6" />,
-    href: "/games/numbrix",
+    href: "/works/numbrix",
     color: "bg-blue-500",
     difficulty: "Medium" as const,
     isDaily: false,
-    type: "GAME" as const
+    type: "APP" as const
   },
   {
     title: "Sudoku",
     description: "Classic logic-based number placement puzzle.",
     icon: <BrainCircuit className="w-6 h-6" />,
-    href: "/games/sudoku",
+    href: "/works/sudoku",
     color: "bg-purple-500",
     difficulty: "Hard" as const,
     isDaily: true,
-    type: "GAME" as const
+    type: "APP" as const
   }
 ];
 
@@ -85,9 +85,9 @@ const getIcon = (iconName: string | null) => {
 };
 
 export default async function Home() {
-  // Fetch latest 6 published community games
+  // Fetch latest 6 published community works
   // @ts-ignore
-  const communityGames = await prisma.userWork.findMany({
+  const communityWorks = await prisma.userWork.findMany({
     where: { isPublished: true },
     orderBy: { createdAt: 'desc' },
     take: 6,
@@ -160,7 +160,7 @@ export default async function Home() {
         </section>
 
         {/* Community Section - NEW */}
-        {communityGames.length > 0 && (
+        {communityWorks.length > 0 && (
           <section className="space-y-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 dark:border-slate-800 pb-10">
               <div className="space-y-3">
@@ -175,16 +175,16 @@ export default async function Home() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
-              {communityGames.map((game: any) => (
+              {communityWorks.map((work: any) => (
                 <GameCard 
-                  key={game.id}
-                  title={game.title}
-                  description={game.description || ""}
-                  href={`/user-works/${game.userId}/${game.slug}`}
-                  icon={getIcon(game.icon)}
-                  color={game.color || "bg-indigo-500"}
-                  difficulty={game.difficulty as any}
-                  type={game.type as any}
+                  key={work.id}
+                  title={work.title}
+                  description={work.description || ""}
+                  href={`/user-works/${work.userId}/${work.slug}`}
+                  icon={getIcon(work.icon)}
+                  color={work.color || "bg-indigo-500"}
+                  difficulty={work.difficulty as any}
+                  type={work.type as any}
                 />
               ))}
             </div>

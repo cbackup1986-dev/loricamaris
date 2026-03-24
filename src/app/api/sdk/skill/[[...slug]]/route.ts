@@ -15,7 +15,7 @@ export async function GET(
     const slugArray = resolvedParams.slug || [];
     const filename = "SKILL.md"; // All content consolidated into SKILL.md
 
-    const skillPath = path.join(process.cwd(), "skills/game-creation", filename);
+    const skillPath = path.join(process.cwd(), "skills/app-creation", filename);
     let content = await fs.readFile(skillPath, "utf-8");
     
     // Dynamically replace __DOMAIN__ with the actual host

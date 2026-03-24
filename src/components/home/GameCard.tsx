@@ -15,7 +15,7 @@ interface GameCardProps {
   color: string;
   isDaily?: boolean;
   difficulty?: 'Easy' | 'Medium' | 'Hard' | 'Standard';
-  type?: 'GAME' | 'REPORT' | 'SYSTEM';
+  type?: 'GAME' | 'REPORT' | 'SYSTEM' | 'APP';
 }
 
 export const GameCard: React.FC<GameCardProps> = ({ 
@@ -56,9 +56,10 @@ export const GameCard: React.FC<GameCardProps> = ({
           <div className="flex flex-col items-end gap-1.5 text-right">
             <span className={cn(
               "text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-[0.15em] shadow-sm",
-              type === 'GAME' ? "bg-indigo-500 text-white" :
-              type === 'SYSTEM' ? "bg-emerald-500 text-white" :
-              "bg-amber-500 text-white"
+               type === 'GAME' ? "bg-indigo-500 text-white" :
+               type === 'SYSTEM' ? "bg-emerald-500 text-white" :
+               type === 'APP' ? "bg-amber-500 text-white" :
+               "bg-slate-500 text-white"
             )}>
               {type}
             </span>
