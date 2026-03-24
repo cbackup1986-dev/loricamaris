@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-jakarta: "Plus Jakarta Sans", sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+  
+  /* Brand Colors Map to Tailwind utilities */
+  --color-brand-primary: #6366f1;
+  --color-brand-secondary: #8b5cf6;
+  --color-brand-accent: #10b981;
+  --color-brand-warning: #f59e0b;
+  --color-brand-error: #ef4444;
+  --color-brand-dark: #0f172a;
+
+  /* Theme Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --primary: #6366f1;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #020617;
+    --foreground: #f8fafc;
+    --card: #0f172a;
+    --card-foreground: #f8fafc;
+    --primary: #6366f1;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --border: #1e293b;
+  }
+}
+
+@layer base {
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-jakarta);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-outfit);
+  }
+}
+
+@layer components {
+  .glass {
+    background: rgba(var(--background), 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .brand-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  }
+
+  /* 游戏网格基础样式 */
+  .game-grid-cell {
+    @apply aspect-square flex items-center justify-center text-lg md:text-2xl font-bold rounded-lg border md:border-2 transition-all duration-300;
+  }
+
+  /* 广告位占位符 */
+  .ad-placeholder {
+    @apply relative overflow-hidden bg-white/50 dark:bg-slate-900/50 backdrop-blur-md 
+           border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm
+           flex flex-col items-center justify-center transition-all hover:bg-white/80 dark:hover:bg-slate-900/80;
+  }
+
+  .ad-badge {
+    @apply absolute top-2 right-3 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-tighter
+           bg-slate-100 dark:bg-slate-800 text-slate-400 font-bold;
+  }
+}

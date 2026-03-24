@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id
+  username      String    @unique
+  email         String    @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  developerToken String?   @unique
+  tokenLastUsed  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  workRecords   WorkRecord[]
+  works         UserWork[]
+}
+
+model WorkRecord {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  workId    String   // could be wordle, sudoku, or a report ID
+  status    String   // won, lost, xp_gained, or completed, viewed
+  score     Int      @default(0)
+  level     Int?
+  details   String?  // JSON string for specific data
+  createdAt DateTime @default(now())
+}
+
+model UserWork {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  slug        String               // URL-friendly ID
+  title       String               // Display name
+  description String   @default("")
+  type        String   @default("GAME") // GAME, REPORT, SYSTEM
+  icon        String   @default("Sparkles")
+  color       String   @default("bg-pink-500")
+  difficulty  String   @default("Medium") // For games, maybe config for others
+  isPublished Boolean  @default(false)
+  viewCount   Int      @default(0) // Generalized from playCount
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, slug])
+}

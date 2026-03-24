@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "root": "main",
+  "initialState": {
+    "metrics": [
+      {"label": "Uptime", "value": "99.9%"},
+      {"label": "Requests", "value": "1.2k"}
+    ],
+    "chartData": [
+      {"name": "Jan", "value": 400},
+      {"name": "Feb", "value": 300},
+      {"name": "Mar", "value": 600}
+    ]
+  },
+  "components": [
+    {
+      "id": "main",
+      "type": "Container",
+      "props": { "className": "p-6 space-y-6" },
+      "children": ["header", "stats-row", "chart-card"]
+    },
+    {
+      "id": "header",
+      "type": "Text",
+      "props": { "tag": "h2", "content": "System Overview", "className": "text-2xl font-bold" }
+    },
+    {
+      "id": "stats-row",
+      "type": "Row",
+      "props": { "className": "gap-4" },
+      "children": ["stat-1", "stat-2"]
+    },
+    {
+      "id": "stat-1",
+      "type": "Card",
+      "props": { "title": "Availability", "className": "flex-1" },
+      "bindState": "metrics[0].value"
+    },
+    {
+      "id": "stat-2",
+      "type": "Card",
+      "props": { "title": "Load", "className": "flex-1" },
+      "bindState": "metrics[1].value"
+    },
+    {
+      "id": "chart-card",
+      "type": "Card",
+      "props": { "title": "Traffic History" },
+      "children": ["traffic-chart"]
+    },
+    {
+      "id": "traffic-chart",
+      "type": "Chart",
+      "props": { "xKey": "name", "yKey": "value" },
+      "bindState": "chartData"
+    }
+  ]
+}
