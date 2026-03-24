@@ -58,19 +58,22 @@ To publish apps to your account, you **MUST** include your developer token in th
 **Payload**: `application/json`
 ```json
 {
-  "manifest": { "title": "...", "icon": "...", ... },
+  "manifest": { "title": "My Awesome Game", "icon": "Gamepad", "color": "bg-indigo-600" },
   "definition": { "root": "...", "components": [...] },
   "script": "api.registerHandler(...)",
-  "slug": "optional-custom-slug"
+  "slug": "my-awesome-game" 
 }
 ```
+
+> [!TIP]
+> **Always provide a `slug`**: The `slug` determines your app's permanent URL (e.g., `__DOMAIN__/user-works/user-id/my-awesome-game`). If omitted, the platform will attempt to generate one from the title.
 
 ### Method 2: ZIP Upload (Binary)
 **Endpoint**: `POST __DOMAIN__/api/games/upload`
 
 **Payload**: `multipart/form-data`
 - **field `file`**: A ZIP archive containing `manifest.json`, `definition.json`, and `logic.js` at the root.
-- **field `slug`**: (Optional) Custom slug for the app.
+- **field `slug`**: (Recommended) Custom slug representing the business name.
 
 ---
 

@@ -8,15 +8,22 @@ import { getOrCreateGuestUser } from "@/lib/sdk/idUtils";
  * Helper to generate slug from title
  */
 function slugify(text: string) {
-  const s = text
+  let s = text
     .toString()
     .toLowerCase()
-    .normalize('NFD') // handle accents
+    .normalize('NFD')
     .trim()
     .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
+    // Use Unicode property escapes to allow letters and numbers from any language
+    .replace(/[^\p{L}\p{N}-]+/gu, '')
     .replace(/--+/g, '-');
-  return s || "game";
+  
+  // If empty or too short, fallback to a prefixed random string
+  if (!s || s.length < 2) {
+    const random = Math.random().toString(36).substring(2, 8);
+    return `game-${random}`;
+  }
+  return s;
 }
 
 /**
