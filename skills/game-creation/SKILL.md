@@ -41,12 +41,16 @@ Refer to the dynamic API for full property lists: `GET __DOMAIN__/api/sdk/skill`
 
 Agents should choose the most appropriate method based on their available tools (e.g., `fetch`, `curl`).
 
-### Authentication
-Include your developer token in the header for authenticated publishing:
-`Authorization: Bearer <your_token>`
+### Authentication (Mandatory for Production)
+To publish apps to your account, you **MUST** include your developer token in the header.
+`Authorization: Bearer <DEVELOPER_TOKEN>`
 
-> [!NOTE]
-> If no token is provided, the platform may default to guest mode.
+**How to provide it to OpenClaw**:
+- **Option A (Preferred)**: Set the `PEAK_TOKEN` or `DEVELOPER_TOKEN` in the environment where OpenClaw is running.
+- **Option B**: Provide it as a secret if supported by your runtime.
+
+> [!IMPORTANT]
+> Usage without a token will result in **Guest Mode**, where games are temporary and not linked to a persistent account.
 
 ### Method 1: JSON Publication (Synchronous)
 **Endpoint**: `POST __DOMAIN__/api/games/publish`

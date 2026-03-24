@@ -16,13 +16,19 @@ export async function GET(
     const filename = "SKILL.md"; // All content consolidated into SKILL.md
 
     const skillPath = path.join(process.cwd(), "skills/game-creation", filename);
-    const content = await fs.readFile(skillPath, "utf-8");
+    let content = await fs.readFile(skillPath, "utf-8");
     
+    // Dynamically replace __DOMAIN__ with the actual host
+    const host = request.headers.get("host") || "localhost:3000";
+    const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
+    const domain = `${protocol}://${host}`;
+    content = content.replace(/__DOMAIN__/g, domain);
+
     // Return as markdown text/plain so it's easily readable by agents
     return new Response(content, {
       headers: {
         "Content-Type": "text/markdown; charset=utf-8",
-        "Cache-Control": "public, max-age=3600"
+        "Cache-Control": "public, max-age=60" // Reduced cache for dynamic content
       }
     });
 
