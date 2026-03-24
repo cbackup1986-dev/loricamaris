@@ -1,6 +1,6 @@
 services:
   game-app:
-    image: mindpeak-app:latest
+    image: loricamaris-app:latest
     ports:
       - "3000:3000"
     volumes:
@@ -12,4 +12,3 @@ services:
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
       - AUTH_TRUST_HOST=true
     restart: always
-

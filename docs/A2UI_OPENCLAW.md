@@ -1,20 +1,20 @@
 # A2UI & OpenClaw: Agent-Generated UI Guide
 
-This guide explains how to use **OpenClaw** (or any LLM agent) to automatically generate and publish interactive applications on the LoricaMaris platform (`https://135920.xyz/`).
+This guide explains how to use **OpenClaw** (or any LLM agent) to automatically generate and publish interactive applications on the LoricaMaris platform (`__DOMAIN__`).
 
 ## 🛰️ How A2UI Works
 
 A2UI (Agent-to-UI) is the process where an AI agent translates a high-level user request into a functional, sandboxed application.
 
 > [!IMPORTANT]
-> **Dynamic SDK Hook**: Agents should always fetch the latest SDK grammar before starting generation by calling `GET https://135920.xyz/api/sdk/skill`. This ensures the agent uses the most up-to-date syntax and component sets.
+> **Dynamic SDK Hook**: Agents should always fetch the latest SDK grammar before starting generation by calling `GET __DOMAIN__/api/sdk/skill`. This ensures the agent uses the most up-to-date syntax and component sets.
 
 1.  **Request**: User asks "Build me a system monitoring dashboard."
 2.  **Audit**: Agent fetches the SDK specification via the Dynamic API.
 3.  **Generation**: OpenClaw generates `manifest.json`, `definition.json`, and `logic.js`.
 4.  **Synthesis**: The agent packages these files into a ZIP archive.
-5.  **Deployment**: The agent uses the `upload` API to push the ZIP to **`https://135920.xyz/api/games/upload`**.
-6.  **Result**: The platform returns a live URL (e.g., `https://135920.xyz/user-works/guest/peak-pulse`).
+5.  **Deployment**: The agent uses the `upload` API to push the ZIP to **`__DOMAIN__/api/games/upload`**.
+6.  **Result**: The platform returns a live URL (e.g., `__DOMAIN__/user-works/guest/peak-pulse`).
 
 ## 📝 Example OpenClaw Interaction
 
@@ -28,7 +28,7 @@ The agent generates the files following the [SDK Specification](../skills/game-c
 OpenClaw executes a tool call to publish the app to the live platform:
 ```javascript
 // OpenClaw publishes via the zip upload endpoint
-const res = await fetch('https://135920.xyz/api/games/upload', {
+const res = await fetch('__DOMAIN__/api/games/upload', {
   method: 'POST',
   body: formData // containing app.zip
 });
@@ -40,16 +40,16 @@ Check out the **[Peak Pulse Example](../examples/a2ui-demo/)** for a reference i
 ## 🔗 Dynamic Skill API Endpoints
 
 Agents can pull specific documentation sections programmatically from the live domain:
-- **Main SDK Reference**: `https://135920.xyz/api/sdk/skill`
-- **UI Component Set**: `https://135920.xyz/api/sdk/skill/components`
-- **Logic Templates**: `https://135920.xyz/api/sdk/skill/templates`
-- **Publishing API**: `https://135920.xyz/api/sdk/skill/publish`
+- **Main SDK Reference**: `__DOMAIN__/api/sdk/skill`
+- **UI Component Set**: `__DOMAIN__/api/sdk/skill/components`
+- **Logic Templates**: `__DOMAIN__/api/sdk/skill/templates`
+- **Publishing API**: `__DOMAIN__/api/sdk/skill/publish`
 
 ## 🤖 Autonomous Development Loop (Self-Healing)
 
-Agents use the Dynamic API on **`https://135920.xyz`** to achieve "Self-Healing" development. If a platform update introduces new components or changes the logic API, the agent follows this loop:
+Agents use the Dynamic API on **`__DOMAIN__`** to achieve "Self-Healing" development. If a platform update introduces new components or changes the logic API, the agent follows this loop:
 
-1.  **Monitor**: Periodic check of `https://135920.xyz/api/sdk/skill` for version changes.
+1.  **Monitor**: Periodic check of `__DOMAIN__/api/sdk/skill` for version changes.
 2.  **Learn**: Pull the latest `skill-components.md` to discover new UI capabilities.
 3.  **Generate**: Develop a small game (e.g., "Space Evader" or "Task Tracker") based on the fresh grammar.
 4.  **Validate**: Publish to the platform and verify rendering.

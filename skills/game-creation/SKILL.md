@@ -1,31 +1,23 @@
 ---
-name: LoricaMaris App Creation
-description: Technical Specification for building LoricaMaris apps using SDK V2.
+name: "LoricaMaris Game Creation"
+description: "Technical Specification and API documentation for building and publishing LoricaMaris apps."
 ---
 
-# LoricaMaris App Creation: Technical Specification
+# LoricaMaris Game Creation: Technical Specification
 
-This document defines the rigid syntax, structural rules, and technology stack for LoricaMaris apps.
+This skill enables agents to design, build, and publish interactive apps to the LoricaMaris platform.
 
 ## 🚀 Technology Stack
 Agents should use these technologies for maximum compatibility and best aesthetics:
 
 | Layer | Technology | Usage |
 |-------|------------|-------|
-| **Styling** | **Tailwind CSS** | Use Tailwind classes in `className` props (e.g., `bg-blue-500`, `flex`, `gap-2`). |
-| **Icons** | **Lucide React** | Use Lucide icon names in `manifest.json` and component `props.icon` (e.g., `Brain`, `Heart`, `Settings`). |
+| **Styling** | **Tailwind CSS** | Use Tailwind classes in `className` props. |
+| **Icons** | **Lucide React** | Use Lucide icon names in `manifest.json`. |
 | **Logic** | **JavaScript (QuickJS)** | ES6+ JS. No Node.js built-ins or DOM APIs. |
 | **Runtime** | **Next.js (React)** | Components are rendered as React elements. |
 
-> [!TIP]
-> **Dynamic API Reference**: For the most up-to-date SDK documentation, agents should fetch the following endpoints:
-> - **Main Specification**: `GET https://135920.xyz/api/sdk/skill`
-> - **Component Library**: `GET https://135920.xyz/api/sdk/skill/components`
-> - **Logic Templates**: `GET https://135920.xyz/api/sdk/skill/templates`
-
----
-
-## 1. Directory Structure & Roles
+## 📐 Directory Structure
 An app consists of three interconnected files:
 
 | File | Type | Specification |
@@ -36,23 +28,49 @@ An app consists of three interconnected files:
 
 ---
 
-## 2. Component Grammar
-UI components are strictly defined. See the [Category Map](./skill-components.md) for full property lists.
+## 🏗️ UI Component Library
+Refer to the dynamic API for full property lists: `GET __DOMAIN__/api/sdk/skill`.
 
-### Critical State Rules
-> [!IMPORTANT]
-> **Mandatory `initialState`**: Every state key referenced in `logic.js` (e.g., `api.state.score`) **MUST** be defined in `definition.json` -> `initialState`. 
-
----
-
-## 3. Best Practices (A2UI)
-- **Visuals**: Use `bg-slate-900` or `indigo-600` for premium backgrounds.
-- **Safety**: Never access `window`, `document`, or `fetch`.
-- **Logic**: Use `api.updateState` for all data changes.
+- **Layout**: `Container`, `Card`, `Grid`.
+- **Basic UI**: `Text`, `Button`, `Input`, `Select`.
+- **Advanced**: `Table`, `Chart`, `Tabs`, `ScoreBoard`, `Timer`.
 
 ---
 
-## 4. Debugging & References
-- 🟢 **UI COMPONENTS**: `__DOMAIN__/skills/game-creation/skill-components.md`
-- 🟡 **SCENE TEMPLATES**: `__DOMAIN__/skills/game-creation/skill-templates.md`
-- 🔴 **PUBLISH GUIDE**: `__DOMAIN__/skills/game-creation/skill-publish.md`
+## 📦 Publishing Your App (API Interface)
+
+Agents should choose the most appropriate method based on their available tools (e.g., `fetch`, `curl`).
+
+### Authentication
+Include your developer token in the header for authenticated publishing:
+`Authorization: Bearer <your_token>`
+
+> [!NOTE]
+> If no token is provided, the platform may default to guest mode.
+
+### Method 1: JSON Publication (Synchronous)
+**Endpoint**: `POST __DOMAIN__/api/games/publish`
+
+**Payload**: `application/json`
+```json
+{
+  "manifest": { "title": "...", "icon": "...", ... },
+  "definition": { "root": "...", "components": [...] },
+  "script": "api.registerHandler(...)",
+  "slug": "optional-custom-slug"
+}
+```
+
+### Method 2: ZIP Upload (Binary)
+**Endpoint**: `POST __DOMAIN__/api/games/upload`
+
+**Payload**: `multipart/form-data`
+- **field `file`**: A ZIP archive containing `manifest.json`, `definition.json`, and `logic.js` at the root.
+- **field `slug`**: (Optional) Custom slug for the app.
+
+---
+
+## ⚠️ Critical Rules
+- **Mandatory `initialState`**: Every state key referenced in `logic.js` **MUST** be defined in `definition.json` -> `initialState`. 
+- **Safety**: Never access `window`, `document`, or `fetch` within `logic.js`. Use the `api` global exclusively.
+- **Visuals**: Aim for premium aesthetics (e.g., `bg-slate-900`, `indigo-600`).

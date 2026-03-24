@@ -13,15 +13,7 @@ export async function GET(
   try {
     const resolvedParams = await params;
     const slugArray = resolvedParams.slug || [];
-    let filename = "SKILL.md"; // default
-
-    if (slugArray.length > 0) {
-      const section = slugArray[0];
-      if (section === "components") filename = "skill-components.md";
-      else if (section === "templates") filename = "skill-templates.md";
-      else if (section === "publish") filename = "skill-publish.md";
-      else filename = "SKILL.md";
-    }
+    const filename = "SKILL.md"; // All content consolidated into SKILL.md
 
     const skillPath = path.join(process.cwd(), "skills/game-creation", filename);
     const content = await fs.readFile(skillPath, "utf-8");

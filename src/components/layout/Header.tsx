@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { siteConfig } from '@/config/site';
-import { LayoutGrid, BarChart3, Info, User, X, Activity } from 'lucide-react';
+import { LayoutGrid, BarChart3, Info, User, X, Activity, LogOut, ChevronDown, Settings } from 'lucide-react';
 import { AuthModal } from '../auth/AuthModal';
 import { GlobalStatisticsModal } from './GlobalStatisticsModal';
 import { useSession, signOut } from 'next-auth/react';
@@ -20,6 +20,7 @@ export default function Header() {
   const { data: session } = useSession();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   return (
     <>
@@ -68,28 +69,71 @@ export default function Header() {
             <div className="hidden md:block h-8 w-[1px] bg-white/5 mx-2" />
 
             {session ? (
-              <button 
-                onClick={() => signOut()}
-                className="flex items-center gap-1.5 md:gap-3 pl-1 pr-2 md:pr-4 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-full border border-indigo-500/20 transition-all group"
-                title="Click to Sign Out"
-              >
-                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full brand-gradient flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-all text-[10px] font-black">
-                  {session.user?.username?.[0] || 'U'}
-                </div>
-                <div className="hidden sm:flex flex-col items-start leading-none mr-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white">{session.user?.username}</span>
-                  <span className="text-[8px] font-bold text-indigo-400 uppercase tracking-tighter">Operative Active</span>
-                </div>
-                <Link 
-                  href="/create"
-                  className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg transition-all border border-white/5"
-                  onClick={(e) => e.stopPropagation()}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-1.5 md:gap-3 pl-1 pr-2 md:pr-4 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-full border border-indigo-500/20 transition-all group lg:min-w-[160px]"
                 >
-                  <Activity size={12} className="text-indigo-400" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-white">Studio</span>
-                </Link>
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-full brand-gradient flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-all text-[10px] font-black">
+                    {session.user?.username?.[0] || 'U'}
+                  </div>
+                  <div className="hidden sm:flex flex-col items-start leading-none flex-1">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white">{session.user?.username}</span>
+                    <span className="text-[8px] font-bold text-indigo-400 uppercase tracking-tighter">Operative Active</span>
+                  </div>
+                  <ChevronDown className={cn("text-white/40 group-hover:text-white transition-transform duration-300", isUserMenuOpen && "rotate-180")} size={14} />
+                </button>
 
-              </button>
+                {isUserMenuOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setIsUserMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-3 w-56 origin-top-right z-50 overflow-hidden bg-slate-950/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl animate-in fade-in zoom-in duration-200">
+                      <div className="p-3 border-b border-white/5 bg-white/5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl brand-gradient flex items-center justify-center text-white font-black text-sm">
+                            {session.user?.username?.[0] || 'U'}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-black text-white uppercase tracking-wider">{session.user?.username}</span>
+                            <span className="text-[9px] font-medium text-white/40 truncate">{session.user?.email}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-2">
+                        <Link 
+                          href="/create"
+                          className="flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-white/70 hover:text-white hover:bg-indigo-500/20 rounded-xl transition-all group"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <Activity size={16} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+                          <span>Simulation Studio</span>
+                        </Link>
+                        
+                        <button 
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-white/70 hover:text-white hover:bg-indigo-500/20 rounded-xl transition-all group"
+                        >
+                          <Settings size={16} className="text-indigo-400 group-hover:rotate-45 transition-transform" />
+                          <span>System Config</span>
+                        </button>
+                      </div>
+
+                      <div className="p-2 border-t border-white/5 bg-red-500/5">
+                        <button 
+                          onClick={() => signOut()}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all group"
+                        >
+                          <LogOut size={16} className="group-hover:-translate-x-1 transition-transform" />
+                          <span>Abort Session</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             ) : (
               <button
                 onClick={() => setIsAuthOpen(true)}
