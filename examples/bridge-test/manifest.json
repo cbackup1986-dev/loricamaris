@@ -1,0 +1,7 @@
+{
+  "title": "Bridge Test",
+  "description": "Verify external API (CoinDesk) and Managed DB connectivity.",
+  "icon": "Database",
+  "color": "bg-indigo-600",
+  "difficulty": "Medium"
+}

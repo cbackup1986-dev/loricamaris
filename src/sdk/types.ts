@@ -88,6 +88,15 @@ export interface SandboxAPI {
     load: (key: string) => any;
   };
   performance?: any;
+
+  // ─── External Connectivity (Bridge) ─────────────────────────
+  fetch: (url: string, options?: RequestInit) => Promise<any>;
+  db: {
+    getRow: (key: string) => Promise<any>;
+    addRow: (key: string, value: any) => Promise<any>;
+    updateRow: (key: string, value: any) => Promise<any>;
+    deleteRow: (key: string) => Promise<any>;
+  };
 }
 
 // ─── File Structure ──────────────────────────────────────────

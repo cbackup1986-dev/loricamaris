@@ -241,6 +241,16 @@ api.vfx.confetti()                 // confetti animation
 api.vfx.shake()                    // shake animation
 api.storage.save(key, value)       // persist to localStorage
 api.storage.load(key)              // load from localStorage
+
+### 🌐 External & DB (Bridge)
+```javascript
+// External API Fetch
+await api.fetch(url, options)      // Safe proxy for fetch (whitelist required)
+
+// Managed Database
+await api.db.getRow(key)           // get record from platform DB
+await api.db.addRow(key, data)     // create/overwrite record
+await api.db.deleteRow(key)        // remove record
 ```
 
 ### ⛔ BLOCKED — These will cause errors if used:
@@ -531,3 +541,5 @@ if (result.success) {
 | **script is a string** | The `script` field value is a string, not an object or code block |
 | **One root component** | `definition.root` must match exactly one `id` in `components` |
 | **children are id strings** | `children: ["id1", "id2"]` — string array of component ids, not nested objects |
+| **External Whitelist** | For `api.fetch`, domains must be whitelisted by the platform owner |
+| **DB is Isolated** | `api.db` is isolated per application; you cannot access other apps' data |

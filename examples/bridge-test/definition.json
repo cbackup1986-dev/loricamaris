@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "root": "main",
+  "initialState": {
+    "status": "Ready",
+    "data": null,
+    "dbValue": null
+  },
+  "components": [
+    {
+      "id": "main",
+      "type": "Container",
+      "props": { "className": "p-8 space-y-6" },
+      "children": ["title", "status_text", "stats"]
+    },
+    {
+      "id": "title",
+      "type": "Text",
+      "props": { "tag": "h1", "content": "Bridge Test Backend", "className": "text-3xl font-bold" }
+    },
+    {
+      "id": "status_text",
+      "type": "Text",
+      "props": { "tag": "p", "className": "text-lg text-slate-500" },
+      "bindState": "status"
+    },
+    {
+      "id": "stats",
+      "type": "Row",
+      "props": { "className": "gap-4" },
+      "children": ["live_card", "db_card"]
+    },
+    {
+      "id": "live_card",
+      "type": "Card",
+      "props": { "title": "Live Price (API)", "className": "flex-1" },
+      "children": ["live_val"]
+    },
+    {
+      "id": "live_val",
+      "type": "Text",
+      "props": { "tag": "h2", "className": "text-2xl font-black text-rose-500" },
+      "bindState": "data"
+    },
+    {
+      "id": "db_card",
+      "type": "Card",
+      "props": { "title": "Saved Price (DB)", "className": "flex-1 text-slate-400" },
+      "children": ["db_val"]
+    },
+    {
+      "id": "db_val",
+      "type": "Text",
+      "props": { "tag": "h2", "className": "text-2xl font-black text-emerald-500" },
+      "bindState": "dbValue"
+    }
+  ]
+}

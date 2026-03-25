@@ -36,7 +36,8 @@ export interface GameCallbacks {
 export function createSandbox(
   script: string,
   initialState: Record<string, unknown>,
-  callbacks: GameCallbacks
+  callbacks: GameCallbacks,
+  workId?: string // Added workId for bridge authentication
 ) {
   let state = { ...initialState };
   const customHandlers: Record<string, (...args: any[]) => void> = {};
@@ -87,6 +88,58 @@ export function createSandbox(
           const val = localStorage.getItem(`peak_game_${key}`);
           return val ? JSON.parse(val) : null;
         } catch (e) { return null; }
+      }
+    },
+    // ─── External Bridge ──────────────────────────────────────
+    fetch: async (url, options) => {
+      if (!workId) throw new Error("Bridge requires a valid workId");
+      const res = await fetch("/api/works/bridge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "fetch", workId, payload: { url, options } }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+    db: {
+      getRow: async (key) => {
+        if (!workId) throw new Error("Bridge requires workId");
+        const res = await fetch("/api/works/bridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "db", workId, payload: { action: "getRow", key } }),
+        });
+        const result = await res.json();
+        return result.data;
+      },
+      addRow: async (key, value) => {
+        if (!workId) throw new Error("Bridge requires workId");
+        const res = await fetch("/api/works/bridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "db", workId, payload: { action: "addRow", key, value } }),
+        });
+        const result = await res.json();
+        return result.data;
+      },
+      updateRow: async (key, value) => {
+        if (!workId) throw new Error("Bridge requires workId");
+        const res = await fetch("/api/works/bridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "db", workId, payload: { action: "updateRow", key, value } }),
+        });
+        const result = await res.json();
+        return result.data;
+      },
+      deleteRow: async (key) => {
+        if (!workId) throw new Error("Bridge requires workId");
+        await fetch("/api/works/bridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "db", workId, payload: { action: "deleteRow", key } }),
+        });
       }
     },
     performance: typeof performance !== 'undefined' ? performance : undefined,
