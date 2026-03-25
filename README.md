@@ -64,9 +64,9 @@ Ensure you update `NEXT_PUBLIC_APP_URL` and `NEXTAUTH_SECRET` in your `.env` bef
 ## 📚 Documentation
 
 - **[A2UI Guide](./docs/A2UI_OPENCLAW.md)**: Using OpenClaw for automated UI generation.
-- **[SDK Specification](./skills/game-creation/SKILL.md)**: How to build apps.
-- **[Component Reference](./skills/game-creation/skill-components.md)**: UI documentation.
-- **[Publishing Guide](./skills/game-creation/skill-publish.md)**: API & Deployment details.
+- **[SDK Specification](./skills/app-creation/SKILL.md)**: How to build apps.
+- **[Component Reference](./skills/app-creation/skill-components.md)**: UI documentation.
+- **[Publishing Guide](./skills/app-creation/skill-publish.md)**: API & Deployment details.
 
 ## 🤝 Contributing
 

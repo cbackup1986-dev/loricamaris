@@ -4,11 +4,11 @@
   "lastGlobalUpdate": "2026-03-20T10:30:00Z",
   "skills": [
     {
-      "id": "game-creation",
+      "id": "app-creation",
       "name": "A2UI & Game Engine",
       "version": "2.2.0-a2ui",
       "description": "Logic/UI framework for Games, Reports, and Management Systems.",
-      "path": "./game-creation/SKILL.md",
+      "path": "./app-creation/SKILL.md",
       "capabilities": [
         "A2UI (AI-to-UI) Architecture",
         "Interactive Data Tables",

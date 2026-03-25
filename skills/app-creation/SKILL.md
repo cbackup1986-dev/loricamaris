@@ -1,6 +1,6 @@
 ---
 name: "LoricaMaris Creation Engine"
-description: "Technical Specification and API documentation for building and publishing LoricaMaris applications."
+description: "Technical Specification and API documentation for building and publishing LoricaMaris applications on __DOMAIN__."
 ---
 
 # LoricaMaris Creation Engine: Technical Specification
@@ -9,6 +9,9 @@ description: "Technical Specification and API documentation for building and pub
 > Read the "JSON Encoding Rules" section BEFORE generating any code.
 
 This skill enables agents to design, build, and publish interactive applications to the LoricaMaris platform.
+
+### 📡 请求说明 (Request Specification)
+Access all API endpoints using the dynamic identifier `__DOMAIN__`. The server will automatically replace this with the active host (e.g., `https://loricamaris.com`).
 
 ---
 
@@ -431,7 +434,7 @@ payload = json.dumps(
 
 # --- 4. POST with explicit UTF-8 encoding ---
 response = requests.post(
-    f"{DOMAIN}/api/works/publish",
+    f"__DOMAIN__/api/works/publish",
     data=payload.encode("utf-8"),
     headers={
         "Content-Type": "application/json; charset=utf-8",
@@ -497,7 +500,7 @@ const payload = {
 };
 
 // JSON.stringify automatically escapes newlines in string values
-const response = await fetch(`${DOMAIN}/api/works/publish`, {
+const response = await fetch(`__DOMAIN__/api/works/publish`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json; charset=utf-8",

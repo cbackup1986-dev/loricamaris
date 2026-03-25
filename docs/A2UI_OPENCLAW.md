@@ -22,7 +22,7 @@ A2UI (Agent-to-UI) is the process where an AI agent translates a high-level user
 > "Using the LoricaMaris skill, create a dashboard called 'Peak Pulse' that shows system uptime and traffic history using a Line Chart. Set the theme to indigo. Once generated, publish it to my account."
 
 ### 2. The Agent's Output (Internal)
-The agent generates the files following the [SDK Specification](../skills/game-creation/SKILL.md).
+The agent generates the files following the [SDK Specification](../skills/app-creation/SKILL.md).
 
 ### 3. The Deployment Command
 OpenClaw executes a tool call to publish the app to the live platform:
