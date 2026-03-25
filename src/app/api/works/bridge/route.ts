@@ -49,8 +49,9 @@ export async function POST(req: Request) {
 
     // ── 2. Managed Database (DB) Proxy ────────────────────────
     if (type === "db") {
-      const { action, key, value } = payload;
+      const { action, key, value, table, data: inputData, options } = payload;
 
+      // --- Legacy Key-Value Store ---
       if (action === "getRow") {
         const record = await prisma.workData.findFirst({
           where: { userWorkId: workId, key },
@@ -59,11 +60,9 @@ export async function POST(req: Request) {
       }
 
       if (action === "addRow" || action === "updateRow") {
+        const existing = await prisma.workData.findFirst({ where: { userWorkId: workId, key }, select: { id: true } });
         const upserted = await prisma.workData.upsert({
-          where: { 
-            // Composite index would be better, but for now we find by userWorkId + key
-            id: (await prisma.workData.findFirst({ where: { userWorkId: workId, key }, select: { id: true } }))?.id || "temp-id"
-          },
+          where: { id: existing?.id || "new-id-" + Math.random() },
           update: { value: JSON.stringify(value) },
           create: { userWorkId: workId, key, value: JSON.stringify(value) },
         });
@@ -75,6 +74,61 @@ export async function POST(req: Request) {
           where: { userWorkId: workId, key },
         });
         return NextResponse.json({ success: true });
+      }
+
+      // --- Virtual Table API (Advanced) ---
+      if (action === "createTable") {
+        const metaKey = "__tables__";
+        const meta = await prisma.workData.findFirst({ where: { userWorkId: workId, key: metaKey } });
+        const tables = meta ? JSON.parse(meta.value) : {};
+        tables[table] = { schema: value, createdAt: new Date() };
+        
+        await prisma.workData.upsert({
+          where: { id: meta?.id || "new-meta-" + Math.random() },
+          update: { value: JSON.stringify(tables) },
+          create: { userWorkId: workId, key: metaKey, value: JSON.stringify(tables) },
+        });
+        return NextResponse.json({ success: true });
+      }
+
+      if (action === "insert") {
+        const rowId = Math.random().toString(36).substring(2, 10);
+        const tblKey = `tbl:${table}:${rowId}`;
+        const inserted = await prisma.workData.create({
+          data: { userWorkId: workId, key: tblKey, value: JSON.stringify(inputData) },
+        });
+        return NextResponse.json({ success: true, data: { id: rowId, ...inputData } });
+      }
+
+      if (action === "select") {
+        const records = await (prisma as any).workData.findMany({
+          where: { userWorkId: workId, key: { startsWith: `tbl:${table}:` } },
+        });
+        let results = records.map((r: any) => ({ id: r.key.split(":").pop(), ...JSON.parse(r.value) }));
+        
+        // Simple filter
+        if (options?.where) {
+          results = results.filter((r: any) => {
+            return Object.entries(options.where).every(([k, v]) => r[k] === v);
+          });
+        }
+        return NextResponse.json({ success: true, data: results });
+      }
+
+      if (action === "aggregate") {
+        const records = await (prisma as any).workData.findMany({
+          where: { userWorkId: workId, key: { startsWith: `tbl:${table}:` } },
+        });
+        const rows = records.map((r: any) => JSON.parse(r.value));
+
+        if (options.count) return NextResponse.json({ success: true, data: rows.length });
+
+        if (options.sum || options.avg) {
+          const field = options.sum || options.avg;
+          const sum = rows.reduce((acc: number, r: any) => acc + (Number(r[field]) || 0), 0);
+          const result = options.sum ? sum : (rows.length ? sum / rows.length : 0);
+          return NextResponse.json({ success: true, data: result });
+        }
       }
     }
 

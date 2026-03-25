@@ -251,6 +251,24 @@ await api.fetch(url, options)      // Safe proxy for fetch (whitelist required)
 await api.db.getRow(key)           // get record from platform DB
 await api.db.addRow(key, data)     // create/overwrite record
 await api.db.deleteRow(key)        // remove record
+
+### 📊 Virtual Tables (Relational-style)
+```javascript
+// 1. Create a table with schema
+await api.db.createTable('expenses', { 
+  amount: 'number', 
+  category: 'string' 
+});
+
+// 2. Insert data
+await api.db.insert('expenses', { amount: 120, category: 'Food' });
+
+// 3. Select with filters
+const rows = await api.db.select('expenses', { category: 'Food' });
+
+// 4. Efficient Statistics (Server-side)
+const total = await api.db.aggregate('expenses', { sum: 'amount' });
+const count = await api.db.aggregate('expenses', { count: true });
 ```
 
 ### ⛔ BLOCKED — These will cause errors if used:

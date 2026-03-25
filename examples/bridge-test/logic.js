@@ -18,10 +18,20 @@ api.registerHandler('onInit', async () => {
     api.log('Testing DB Get...');
     const saved = await api.db.getRow('last_btc_price');
     
+    // 4. Test Virtual Table
+    api.log('Testing Virtual Table...');
+    await api.db.createTable('scores', { value: 'number', user: 'string' });
+    await api.db.insert('scores', { value: 100, user: 'Alice' });
+    await api.db.insert('scores', { value: 200, user: 'Bob' });
+    
+    // 5. Test Aggregation
+    const total = await api.db.aggregate('scores', { sum: 'value' });
+    api.log('Total Score:', total);
+    
     api.updateState({ 
-      status: 'Connected & Saved!', 
+      status: 'Full Bridge Verified!', 
       data: btcData.bpi.USD.rate,
-      dbValue: saved.price
+      dbValue: total // Show total score from virtual table
     });
     api.vfx.confetti();
   } catch (err) {

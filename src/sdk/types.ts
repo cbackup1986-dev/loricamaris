@@ -96,6 +96,17 @@ export interface SandboxAPI {
     addRow: (key: string, value: any) => Promise<any>;
     updateRow: (key: string, value: any) => Promise<any>;
     deleteRow: (key: string) => Promise<any>;
+    
+    // ─── Virtual Table API (Advanced) ────────────────────────
+    createTable: (name: string, schema: Record<string, string>) => Promise<any>;
+    insert: (table: string, data: Record<string, any>) => Promise<any>;
+    select: (table: string, filters?: Record<string, any>) => Promise<any>;
+    aggregate: (table: string, options: { 
+      sum?: string; 
+      avg?: string; 
+      count?: boolean; 
+      groupBy?: string 
+    }) => Promise<any>;
   };
 }
 

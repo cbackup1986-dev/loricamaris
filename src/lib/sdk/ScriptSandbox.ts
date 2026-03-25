@@ -90,7 +90,7 @@ export function createSandbox(
         } catch (e) { return null; }
       }
     },
-    // ─── External Bridge ──────────────────────────────────────
+    // ─── External Connectivity (Bridge) ──────────────────────
     fetch: async (url, options) => {
       if (!workId) throw new Error("Bridge requires a valid workId");
       const res = await fetch("/api/works/bridge", {
@@ -140,6 +140,45 @@ export function createSandbox(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "db", workId, payload: { action: "deleteRow", key } }),
         });
+      },
+      // --- Virtual Table Bridge ---
+      createTable: async (table, schema) => {
+        if (!workId) throw new Error("Bridge requires workId");
+        await fetch("/api/works/bridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "db", workId, payload: { action: "createTable", table, value: schema } }),
+        });
+      },
+      insert: async (table, data) => {
+        if (!workId) throw new Error("Bridge requires workId");
+        const res = await fetch("/api/works/bridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "db", workId, payload: { action: "insert", table, data } }),
+        });
+        const result = await res.json();
+        return result.data;
+      },
+      select: async (table, where) => {
+        if (!workId) throw new Error("Bridge requires workId");
+        const res = await fetch("/api/works/bridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "db", workId, payload: { action: "select", table, options: { where } } }),
+        });
+        const result = await res.json();
+        return result.data;
+      },
+      aggregate: async (table, options) => {
+        if (!workId) throw new Error("Bridge requires workId");
+        const res = await fetch("/api/works/bridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "db", workId, payload: { action: "aggregate", table, options } }),
+        });
+        const result = await res.json();
+        return result.data;
       }
     },
     performance: typeof performance !== 'undefined' ? performance : undefined,
