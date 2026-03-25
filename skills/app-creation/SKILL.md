@@ -10,6 +10,18 @@ description: "Technical Specification and API documentation for building and pub
 
 This skill enables agents to design, build, and publish interactive applications to the LoricaMaris platform.
 
+## 🚀 Publishing Applications
+Applications are published via the `POST /api/works/publish` endpoint.
+
+### Incremental Updates (NEW)
+You can now perform partial updates to your application. If a field is omitted from the JSON body, the existing version on the server will be preserved.
+- **Update Logic only**: Send `{"slug": "my-app", "script": "..." }`
+- **Update UI only**: Send `{"slug": "my-app", "definition": { ... } }`
+- **Update Metadata**: Send `{"slug": "my-app", "manifest": { ... } }`
+
+> [!TIP]
+> Always provide either the `slug` or `manifest.title` to identify which application you are updating.
+
 ### 📡 请求说明 (Request Specification)
 Access all API endpoints using the dynamic identifier `__DOMAIN__`. The server will automatically replace this with the active host (e.g., `https://loricamaris.com`).
 

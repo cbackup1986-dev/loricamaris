@@ -121,30 +121,13 @@ export async function POST(req: Request) {
     const { manifest, definition, script } = body;
     let { slug } = body;
 
-    const missing: string[] = [];
-    if (!manifest) missing.push("manifest");
-    if (!definition) missing.push("definition");
-    if (!script) missing.push("script");
-
-    if (missing.length > 0) {
-      return NextResponse.json(
-        {
-          error: `Missing required fields: ${missing.join(", ")}`,
-          received: Object.keys(body),
-          hint: "Body must contain: manifest (object), definition (object), script (string), slug (string, optional)",
-        },
-        { status: 400 }
-      );
+    // We still need manifest.title if it's a new work, or slug if it's an update.
+    // Logic: If manifest is provided, title is required.
+    if (manifest && !manifest.title) {
+      return NextResponse.json({ error: "manifest.title is required when manifest is provided" }, { status: 400 });
     }
 
-    if (!manifest!.title) {
-      return NextResponse.json(
-        { error: "manifest.title is required" },
-        { status: 400 }
-      );
-    }
-
-    if (typeof script !== "string") {
+    if (script !== undefined && typeof script !== "string") {
       return NextResponse.json(
         {
           error: "The 'script' field must be a string, not an object or array",
@@ -156,41 +139,45 @@ export async function POST(req: Request) {
 
     // ── 4. Resolve slug ──────────────────────────────────────────────────────
     if (!slug) {
-      slug = slugify(manifest!.title);
+      if (manifest?.title) {
+        slug = slugify(manifest.title);
+      } else {
+        return NextResponse.json({ error: "Slug or manifest.title is required to identify the work" }, { status: 400 });
+      }
     } else {
       // Sanitize caller-provided slug (allow Unicode letters + digits + hyphens)
       slug = slug.replace(/[^\p{L}\p{N}-]+/gu, "").toLowerCase();
-      if (!slug) slug = slugify(manifest!.title);
+      if (!slug && manifest?.title) slug = slugify(manifest.title);
     }
 
     // ── 5. Upsert database record ────────────────────────────────────────────
+    const updateData: any = { isPublished: true };
+    if (manifest?.title) updateData.title = manifest.title;
+    if (manifest?.description) updateData.description = manifest.description;
+    if (manifest?.icon) updateData.icon = manifest.icon;
+    if (manifest?.color) updateData.color = manifest.color;
+    if (manifest?.difficulty) updateData.difficulty = manifest.difficulty;
+
     // @ts-ignore
     const game = await prisma.userWork.upsert({
       where: { userId_slug: { userId: user.id, slug } },
       create: {
         userId: user.id,
         slug,
-        title: manifest!.title,
-        description: manifest!.description || "",
-        icon: manifest!.icon || "Sparkles",
-        color: manifest!.color || "bg-pink-500",
-        difficulty: manifest!.difficulty || "Medium",
+        title: manifest?.title || "Untitled",
+        description: manifest?.description || "",
+        icon: manifest?.icon || "Sparkles",
+        color: manifest?.color || "bg-pink-500",
+        difficulty: manifest?.difficulty || "Medium",
         isPublished: true,
       },
-      update: {
-        title: manifest!.title,
-        description: manifest!.description || "",
-        icon: manifest!.icon || "Sparkles",
-        color: manifest!.color || "bg-pink-500",
-        difficulty: manifest!.difficulty || "Medium",
-        isPublished: true,
-      },
+      update: updateData,
     });
 
     // ── 6. Write files to disk ───────────────────────────────────────────────
-    await saveManifest(user.id, slug, manifest!);
-    await saveDefinition(user.id, slug, definition!);
-    await saveLogic(user.id, slug, script);
+    if (manifest) await saveManifest(user.id, slug, manifest);
+    if (definition) await saveDefinition(user.id, slug, definition);
+    if (script) await saveLogic(user.id, slug, script);
 
     // ── 7. Update token last-used timestamp ──────────────────────────────────
     await prisma.user.update({

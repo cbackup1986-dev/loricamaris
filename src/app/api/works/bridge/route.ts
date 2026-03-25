@@ -79,11 +79,18 @@ export async function POST(req: Request) {
       // --- Virtual Table API (Advanced) ---
       if (action === "createTable") {
         const metaKey = "__tables__";
-        const meta = await prisma.workData.findFirst({ where: { userWorkId: workId, key: metaKey } });
+        const meta = await (prisma as any).workData.findFirst({ where: { userWorkId: workId, key: metaKey } });
         const tables = meta ? JSON.parse(meta.value) : {};
-        tables[table] = { schema: value, createdAt: new Date() };
         
-        await prisma.workData.upsert({
+        // --- Incremental Schema Merging ---
+        const existingTable = tables[table] || { schema: {}, createdAt: new Date() };
+        tables[table] = { 
+          ...existingTable,
+          schema: { ...existingTable.schema, ...value }, // Merge schemas
+          updatedAt: new Date() 
+        };
+        
+        await (prisma as any).workData.upsert({
           where: { id: meta?.id || "new-meta-" + Math.random() },
           update: { value: JSON.stringify(tables) },
           create: { userWorkId: workId, key: metaKey, value: JSON.stringify(tables) },
