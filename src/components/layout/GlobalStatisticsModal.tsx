@@ -105,7 +105,7 @@ export function GlobalStatisticsModal({ isOpen, onClose, session }: GlobalStatis
                                 i === 0 ? "bg-amber-500/20 border-amber-500/50 text-amber-500" : 
                                 "bg-white/5 border-white/10 text-white/40"
                               )}>{i + 1}</span>
-                              <span className="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">{rc.user?.username || 'Guest'}</span>
+                              <span className="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">{rc.user?.username || 'Unknown'}</span>
                             </div>
                             <div className="flex flex-col items-end leading-none">
                               <span className="text-sm font-black text-indigo-400 tabular-nums">{rc.score}</span>

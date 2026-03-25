@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { getOrCreateGuestUser } from "@/lib/sdk/idUtils";
 
 /**
  * Profile API: Lookup user information by Developer Token.
@@ -15,16 +14,12 @@ export async function GET(req: Request) {
     const appKey = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
 
     if (!appKey) {
-      // Self-healing lookup for Guest Mode
-      const guest = await getOrCreateGuestUser();
-      return NextResponse.json({
-        userId: guest.id,
-        username: guest.username,
-        email: "guest@system.local",
-        isGuest: true,
-        message: "No token provided. Running in Public Guest Mode."
-      });
+      return NextResponse.json(
+        { error: "Unauthorized. Please provide a Bearer token." },
+        { status: 401 }
+      );
     }
+
 
     // Find real user
     const user = await prisma.user.findFirst({

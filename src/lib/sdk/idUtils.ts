@@ -36,30 +36,3 @@ export async function generateNextUserId(): Promise<string> {
   return `${prefix}${String(sequence).padStart(5, '0')}`;
 }
 
-/**
- * Ensures a Guest User (ID: 0001) exists in the database.
- * Returns the user record.
- */
-export async function getOrCreateGuestUser() {
-  const GUEST_ID = "0001";
-  
-  // Try to find
-  const existing = await prisma.user.findUnique({
-    where: { id: GUEST_ID },
-    select: { id: true, username: true }
-  });
-
-  if (existing) return existing;
-
-  // Create if missing (Self-healing)
-  console.log(`[SDK] Creating missing guest user (ID: ${GUEST_ID})...`);
-  return await prisma.user.create({
-    data: {
-      id: GUEST_ID,
-      username: 'guest',
-      email: 'guest@system.local',
-      password: 'no-login'
-    },
-    select: { id: true, username: true }
-  });
-}

@@ -2,157 +2,223 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { saveManifest, saveDefinition, saveLogic, deleteGameFiles } from "@/lib/sdk/GameFileManager";
 import { GameManifest, GameDefinition } from "@/sdk/types";
-import { getOrCreateGuestUser } from "@/lib/sdk/idUtils";
 
 /**
- * Helper to generate slug from title
+ * Converts a title into a URL-safe slug.
+ * Handles Chinese, Japanese, Korean, and other Unicode scripts correctly.
+ * 
+ * Key fix: do NOT call .normalize('NFD') before the Unicode regex,
+ * because NFD decomposes CJK characters into base+combining forms
+ * that then get stripped by the \p{L}\p{N} filter on some runtimes.
  */
-function slugify(text: string) {
-  let s = text
-    .toString()
-    .toLowerCase()
-    .normalize('NFD')
-    .trim()
-    .replace(/\s+/g, '-')
-    // Use Unicode property escapes to allow letters and numbers from any language
-    .replace(/[^\p{L}\p{N}-]+/gu, '')
-    .replace(/--+/g, '-');
-  
-  // If empty or too short, fallback to a prefixed random string
-  if (!s || s.length < 2) {
+function slugify(text: string): string {
+  // Step 1: trim whitespace
+  let s = text.toString().trim();
+
+  // Step 2: replace whitespace runs with hyphens
+  s = s.replace(/\s+/g, '-');
+
+  // Step 3: remove characters that are not Unicode letters, digits, or hyphens
+  // NOTE: do NOT normalize to NFD first — that breaks CJK characters
+  s = s.replace(/[^\p{L}\p{N}-]+/gu, '');
+
+  // Step 4: collapse multiple hyphens
+  s = s.replace(/-{2,}/g, '-');
+
+  // Step 5: lowercase (safe for ASCII; CJK is unaffected)
+  s = s.toLowerCase();
+
+  // Fallback if result is empty or too short
+  if (!s || s.length < 1) {
     const random = Math.random().toString(36).substring(2, 8);
-    return `game-${random}`;
+    return `app-${random}`;
   }
+
   return s;
 }
 
 /**
- * Automated Publish & Management API for OpenClaw.
- * 
- * Header: Authorization: Bearer PEAK_...
+ * Automated Publish & Management API.
+ *
+ * POST /api/works/publish
+ *
+ * Headers:
+ *   Content-Type: application/json; charset=utf-8
+ *   Authorization: Bearer PEAK_...   (optional — guest mode if absent)
+ *
+ * Body (application/json):
+ *   manifest   object   App metadata
+ *   definition object   UI layout JSON
+ *   script     string   Logic JS code (must be a valid JSON string — newlines as \n)
+ *   slug       string   (optional) custom URL slug
  */
-
 export async function POST(req: Request) {
   try {
+    // ── 1. Auth ──────────────────────────────────────────────────────────────
     const authHeader = req.headers.get("Authorization");
-    let user;
+    let user: { id: string; username: string };
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      // Verify token
-      user = await prisma.user.findUnique({
-        // @ts-ignore
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.substring(7).trim();
+      const found = await prisma.user.findUnique({
+        // @ts-ignore — developerToken added via schema
         where: { developerToken: token },
-        select: { id: true, username: true }
+        select: { id: true, username: true },
       });
-
-      if (!user) {
-        return NextResponse.json({ error: "Invalid developer token" }, { status: 403 });
+      if (!found) {
+        return NextResponse.json(
+          { error: "Invalid developer token", hint: "Get your token from /create → Enable Developer Access" },
+          { status: 403 }
+        );
       }
+      user = found;
     } else {
-      // Guest Mode: Self-healing lookup
-      user = await getOrCreateGuestUser();
+      return NextResponse.json(
+        { error: "Unauthorized. Please provide a Bearer token." },
+        { status: 401 }
+      );
     }
 
-    const bodyText = await req.text();
-    let body;
+    // ── 2. Parse body (with detailed error for encoding issues) ───────────────
+    const rawBody = await req.arrayBuffer();
+
+    // Detect and handle BOM (Windows editors sometimes add UTF-8 BOM: EF BB BF)
+    let bodyText: string;
+    const bytes = new Uint8Array(rawBody);
+    if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
+      // Strip UTF-8 BOM
+      bodyText = new TextDecoder("utf-8").decode(bytes.slice(3));
+    } else {
+      bodyText = new TextDecoder("utf-8").decode(bytes);
+    }
+
+    let body: {
+      manifest?: GameManifest;
+      definition?: GameDefinition;
+      script?: string;
+      slug?: string;
+    };
+
     try {
       body = JSON.parse(bodyText);
     } catch (e: any) {
-      return NextResponse.json({
-        error: "Invalid JSON body",
-        details: e.message,
-        hint: "Check for unescaped newlines or special characters in your 'script' or 'definition' strings. Multi-line strings must use \\n."
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Invalid JSON body — failed to parse request",
+          details: e.message,
+          hint: [
+            "1. The 'script' field must be a JSON string — newlines must be \\n, not literal line breaks.",
+            "2. Always use json.dumps() (Python) or JSON.stringify() (JS) to build the payload.",
+            "3. On Windows, save files as UTF-8 (not GBK/GB2312) before posting.",
+            "4. The Content-Type header must be: application/json; charset=utf-8",
+          ].join(" | "),
+        },
+        { status: 400 }
+      );
     }
 
+    // ── 3. Validate required fields ──────────────────────────────────────────
     const { manifest, definition, script } = body;
     let { slug } = body;
 
-    const missingFields = [];
-    if (!manifest) missingFields.push("manifest");
-    if (!definition) missingFields.push("definition");
-    if (!script) missingFields.push("script");
+    const missing: string[] = [];
+    if (!manifest) missing.push("manifest");
+    if (!definition) missing.push("definition");
+    if (!script) missing.push("script");
 
-    if (missingFields.length > 0) {
-      return NextResponse.json({
-        error: `Missing required fields: ${missingFields.join(", ")}`,
-        received: Object.keys(body)
-      }, { status: 400 });
+    if (missing.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Missing required fields: ${missing.join(", ")}`,
+          received: Object.keys(body),
+          hint: "Body must contain: manifest (object), definition (object), script (string), slug (string, optional)",
+        },
+        { status: 400 }
+      );
     }
 
-    // Auto-generate slug if missing
+    if (!manifest!.title) {
+      return NextResponse.json(
+        { error: "manifest.title is required" },
+        { status: 400 }
+      );
+    }
+
+    if (typeof script !== "string") {
+      return NextResponse.json(
+        {
+          error: "The 'script' field must be a string, not an object or array",
+          hint: "Pass your JS code as a string value, e.g. \"script\": \"api.registerHandler(...)\"",
+        },
+        { status: 400 }
+      );
+    }
+
+    // ── 4. Resolve slug ──────────────────────────────────────────────────────
     if (!slug) {
-      const baseSlug = slugify(manifest.title || "game");
-      // Check for collision for this user
-      const existing = await prisma.userWork.findUnique({
-        where: { userId_slug: { userId: user.id, slug: baseSlug } }
-      });
-      
-      if (existing) {
-        // If it exists, we can either overwrite (by using the same slug) 
-        // or create a new one (by adding suffix). 
-        // For OpenClaw/automated tools, overwriting is usually preferred if they use the same title.
-        slug = baseSlug;
-      } else {
-        slug = baseSlug;
-      }
+      slug = slugify(manifest!.title);
+    } else {
+      // Sanitize caller-provided slug (allow Unicode letters + digits + hyphens)
+      slug = slug.replace(/[^\p{L}\p{N}-]+/gu, "").toLowerCase();
+      if (!slug) slug = slugify(manifest!.title);
     }
 
-    // 1. Update/Create Game record in DB
+    // ── 5. Upsert database record ────────────────────────────────────────────
     // @ts-ignore
     const game = await prisma.userWork.upsert({
       where: { userId_slug: { userId: user.id, slug } },
       create: {
         userId: user.id,
         slug,
-        title: manifest.title,
-        description: manifest.description || "",
-        icon: manifest.icon || "Sparkles",
-        color: manifest.color || "bg-pink-500",
-        difficulty: manifest.difficulty || "Medium",
+        title: manifest!.title,
+        description: manifest!.description || "",
+        icon: manifest!.icon || "Sparkles",
+        color: manifest!.color || "bg-pink-500",
+        difficulty: manifest!.difficulty || "Medium",
         isPublished: true,
       },
       update: {
-        title: manifest.title,
-        description: manifest.description || "",
-        icon: manifest.icon || "Sparkles",
-        color: manifest.color || "bg-pink-500",
-        difficulty: manifest.difficulty || "Medium",
+        title: manifest!.title,
+        description: manifest!.description || "",
+        icon: manifest!.icon || "Sparkles",
+        color: manifest!.color || "bg-pink-500",
+        difficulty: manifest!.difficulty || "Medium",
         isPublished: true,
-      }
+      },
     });
 
-    // 2. Write files to disk
-    await saveManifest(user.id, slug, manifest as GameManifest);
-    await saveDefinition(user.id, slug, definition as GameDefinition);
+    // ── 6. Write files to disk ───────────────────────────────────────────────
+    await saveManifest(user.id, slug, manifest!);
+    await saveDefinition(user.id, slug, definition!);
     await saveLogic(user.id, slug, script);
 
-    // 3. Update token usage
+    // ── 7. Update token last-used timestamp ──────────────────────────────────
     await prisma.user.update({
       where: { id: user.id },
       // @ts-ignore
-      data: { tokenLastUsed: new Date() }
+      data: { tokenLastUsed: new Date() },
     });
 
-    const host = req.headers.get("host") || process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") || "localhost:3000";
-    const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
+    // ── 8. Return success ────────────────────────────────────────────────────
+    const host =
+      req.headers.get("host") ||
+      process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") ||
+      "localhost:3000";
+    const protocol =
+      host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
     const url = `${protocol}://${host}/user-works/${user.id}/${slug}`;
 
     return NextResponse.json({
       success: true,
-      message: `Game published successfully!`,
-      data: {
-        slug,
-        title: manifest.title,
-        url,
-        gameId: game.id
-      }
+      message: "Game published successfully!",
+      data: { slug, title: manifest!.title, url, gameId: game.id },
     });
-
   } catch (error: any) {
     console.error("[Publish API Error]:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -162,7 +228,7 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     if (!slug) {
@@ -170,34 +236,28 @@ export async function DELETE(req: Request) {
     }
 
     const token = authHeader.substring(7);
-
-    // Verify token
     const user = await prisma.user.findUnique({
       // @ts-ignore
       where: { developerToken: token },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!user) {
       return NextResponse.json({ error: "Invalid token" }, { status: 403 });
     }
 
-    // Delete from DB (Verify ownership implicitly via userId_slug)
     // @ts-ignore
     await prisma.userWork.delete({
-      where: { userId_slug: { userId: user.id, slug } }
+      where: { userId_slug: { userId: user.id, slug } },
     });
-
-    // Delete files
     await deleteGameFiles(user.id, slug);
 
-    return NextResponse.json({
-      success: true,
-      message: `Game '${slug}' deleted successfully.`
-    });
-
+    return NextResponse.json({ success: true, message: `Game '${slug}' deleted successfully.` });
   } catch (error: any) {
-    console.error("[Publish API DELETE Error]:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    console.error("[Publish DELETE Error]:", error);
+    return NextResponse.json(
+      { error: error.message || "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
